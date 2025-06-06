@@ -19,13 +19,13 @@
         <button type="submit">Get Tracks</button>
     </form>
 
-    {% if tracks %}
+    {% if track_links %}
         <h2>Track List</h2>
         <ul>
-            {% for track in tracks %}
+            {% for item in track_links %}
                 <li>
-                    <a href="https://www.youtube.com/results?search_query={{ track | urlencode }} audio" target="_blank">
-                        🔎 {{ track }}
+                    <a href="{{ item.link }}" target="_blank">
+                        🔎 {{ item.track }}
                     </a>
                 </li>
             {% endfor %}
