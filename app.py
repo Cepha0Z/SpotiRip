@@ -25,20 +25,33 @@ youtube = build('youtube', 'v3', developerKey=YOUTUBE_API_KEY)
 def get_track_list(playlist_url):
     playlist_id = playlist_url.split("/")[-1].split("?")[0]
     results = sp.playlist_tracks(playlist_id)
-    return [f"{item['track']['name']} {item['track']['artists'][0]['name']}" for item in results['items']]
+    return [f"{item['track']['name']} - {item['track']['artists'][0]['name']}" for item in results['items']]
 
-# Function to get first YouTube video link
-def get_first_youtube_link(query):
+# Improved function to get first YouTube video link
+def get_first_youtube_link(query, track_name=None, artist_name=None):
+    search_query = f"{query} official audio OR official video"
+
     request = youtube.search().list(
-        q=query + " audio",
+        q=search_query,
         part='snippet',
-        maxResults=1,
+        maxResults=3,  # Fetch top 3 to pick best match
         type='video'
     )
     response = request.execute()
+
     if response['items']:
+        # Try to match a video with both track name and artist in title
+        for item in response['items']:
+            video_title = item['snippet']['title'].lower()
+            if track_name and artist_name:
+                if track_name.lower() in video_title and artist_name.lower() in video_title:
+                    video_id = item['id']['videoId']
+                    return f"https://www.youtube.com/watch?v={video_id}"
+
+        # If no perfect match, fallback to first result
         video_id = response['items'][0]['id']['videoId']
         return f"https://www.youtube.com/watch?v={video_id}"
+
     else:
         return None
 
@@ -51,7 +64,16 @@ def index():
 
         track_links = []
         for track in tracks:
-            link = get_first_youtube_link(track)
+            # Split track into name and artist
+            if ' - ' in track:
+                track_name, artist_name = track.split(' - ', 1)
+            else:
+                # fallback split on first space if needed
+                parts = track.split(' ')
+                track_name = parts[0]
+                artist_name = ' '.join(parts[1:]) if len(parts) > 1 else ''
+
+            link = get_first_youtube_link(track, track_name, artist_name)
             track_links.append({'track': track, 'link': link})
 
         return render_template('index.html', track_links=track_links)
