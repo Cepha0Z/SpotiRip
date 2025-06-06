@@ -1,4 +1,3 @@
 Flask
 spotipy
-yt_dlp
 python-dotenv
