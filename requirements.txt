@@ -1,3 +1,7 @@
 Flask
-spotipy
 python-dotenv
+spotipy
+google-api-python-client
+google-auth
+google-auth-httplib2
+google-auth-oauthlib
